@@ -1,0 +1,16 @@
+README.md
+pyproject.toml
+pipeline/__init__.py
+pipeline/cli.py
+pipeline/ingest/__init__.py
+pipeline/ingest/bronze_writer.py
+pipeline/reporting/__init__.py
+pipeline/reporting/html_report.py
+pipeline/utils/__init__.py
+pipeline/utils/duck_helpers.py
+reporting_service.egg-info/PKG-INFO
+reporting_service.egg-info/SOURCES.txt
+reporting_service.egg-info/dependency_links.txt
+reporting_service.egg-info/requires.txt
+reporting_service.egg-info/top_level.txt
+tests/test_ingest.py
