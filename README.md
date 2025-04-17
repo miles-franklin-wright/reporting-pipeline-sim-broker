@@ -34,3 +34,16 @@ The ingestion module is the first step in the sim broker data pipeline, responsi
 
 This document outlines the high-level architecture and choices for the ingestion module MVP, minimizing maintenance overhead and preparing for future scaling.
 
+# Silver/Gold Layers
+
+#### Silver layer (models/silver/)
+- **silver_trades.sql**: cleans raw trades (casts & timestamp parsing).
+
+#### Gold layer (models/gold/)
+- **fact_trade.sql**: granular trade fact for slice‑and‑dice.
+- **fact_pnl_daily.sql**: daily aggregate P&L by desk.
+
+Build with:
+```bash
+cd sb_pipeline
+dbt build --vars "lake_root: /data/sim_pipeline/lake"

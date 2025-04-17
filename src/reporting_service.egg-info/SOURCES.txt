@@ -13,4 +13,3 @@ src/reporting_service.egg-info/SOURCES.txt
 src/reporting_service.egg-info/dependency_links.txt
 src/reporting_service.egg-info/requires.txt
 src/reporting_service.egg-info/top_level.txt
-tests/test_ingest.py
