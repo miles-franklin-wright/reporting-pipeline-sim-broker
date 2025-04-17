@@ -5,6 +5,7 @@ import pytest
 from pyspark.sql import SparkSession
 from pipeline.ingest.bronze_writer import ingest_jsonl, ingest_csv, create_spark_session
 
+
 @pytest.fixture(scope="session")
 def spark():
     spark = create_spark_session()
