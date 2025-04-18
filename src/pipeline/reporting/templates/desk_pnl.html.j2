@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Desk P&L Report {{ run_id }}</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 40px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f2f2f2; }
+  </style>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+  <h1>Desk P&L Report {{ run_id }}</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Desk ID</th>
+        <th>Real P&L (USD)</th>
+        <th>Fees (USD)</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for row in rows %}
+      <tr>
+        <td>{{ row.desk_id }}</td>
+        <td>{{ row.real_pnl_usd }}</td>
+        <td>{{ row.fees_usd }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div id="plot"></div>
+  <script>
+    const data = {{ plotly_json_data | safe }};
+    const layout = {{ plotly_json_layout | safe }};
+    Plotly.newPlot('plot', data, layout);
+  </script>
+</body>
+</html>

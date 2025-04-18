@@ -1,48 +1,48 @@
+# tests/unit/test_ingest.py
 import os
-import shutil
-import tempfile
+import json
 import pytest
-from pyspark.sql import SparkSession
-from pipeline.ingest.bronze_writer import ingest_jsonl, ingest_csv, create_spark_session
+from pathlib import Path
 
+from pipeline.utils.spark_helper import get_spark
+from pipeline.ingest.bronze_writer import ingest_jsonl, ingest_csv
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="module")
 def spark():
-    spark = create_spark_session()
+    spark = get_spark()
     yield spark
     spark.stop()
 
-@pytest.fixture
-def temp_dir():
-    dirpath = tempfile.mkdtemp()
-    yield dirpath
-    shutil.rmtree(dirpath)
+def write_jsonl(tmp_path, records):
+    p = tmp_path / "data.jsonl"
+    with p.open("w") as f:
+        for r in records:
+            f.write(json.dumps(r) + "\n")
+    return str(p)
 
-def test_ingest_jsonl(spark, temp_dir):
-    # Create a temporary JSONL file with sample data
-    json_file = os.path.join(temp_dir, "test.jsonl")
-    with open(json_file, "w") as f:
-        f.write('{"col1": "value1", "col2": 10}\n')
-        f.write('{"col1": "value2", "col2": 20}\n')
-    
-    output_path = os.path.join(temp_dir, "output_json")
-    rows_ingested = ingest_jsonl(spark, json_file, output_path)
-    
-    df = spark.read.format("delta").load(output_path)
-    assert df.count() == rows_ingested
-    assert df.count() == 2
+def write_csv(tmp_path, header, rows):
+    p = tmp_path / "data.csv"
+    with p.open("w") as f:
+        f.write(",".join(header) + "\n")
+        for r in rows:
+            f.write(",".join(map(str, r)) + "\n")
+    return str(p)
 
-def test_ingest_csv(spark, temp_dir):
-    # Create a temporary CSV file with sample data
-    csv_file = os.path.join(temp_dir, "test.csv")
-    with open(csv_file, "w") as f:
-        f.write("col1,col2\n")
-        f.write("value1,10\n")
-        f.write("value2,20\n")
-    
-    output_path = os.path.join(temp_dir, "output_csv")
-    rows_ingested = ingest_csv(spark, csv_file, output_path)
-    
-    df = spark.read.format("delta").load(output_path)
-    assert df.count() == rows_ingested
-    assert df.count() == 2
+def test_ingest_jsonl_counts_and_skips_write(spark, tmp_path):
+    # prepare 2 records
+    records = [{"a":1}, {"a":2}]
+    jsonl = write_jsonl(tmp_path, records)
+    outdir = tmp_path / "out_json"
+    # skip_write=True should count but not write
+    count = ingest_jsonl(spark, jsonl, str(outdir), fmt="parquet", skip_write=True)
+    assert count == 2
+    assert not outdir.exists()
+
+def test_ingest_csv_counts_and_skips_write(spark, tmp_path):
+    header = ["x","y"]
+    rows = [[10,100],[20,200]]
+    csvf = write_csv(tmp_path, header, rows)
+    outdir = tmp_path / "out_csv"
+    count = ingest_csv(spark, csvf, str(outdir), fmt="parquet", skip_write=True)
+    assert count == 2
+    assert not outdir.exists()

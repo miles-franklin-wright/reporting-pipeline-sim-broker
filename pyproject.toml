@@ -22,7 +22,8 @@ dependencies = [
   "click",
   "pytest",
   "jinja2",
-  "plotly"
+  "plotly", 
+  "pandas"
 ]
 classifiers = [
   "Programming Language :: Python :: 3",

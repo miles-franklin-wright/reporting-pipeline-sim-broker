@@ -17,6 +17,7 @@ Requires-Dist: click
 Requires-Dist: pytest
 Requires-Dist: jinja2
 Requires-Dist: plotly
+Requires-Dist: pandas
 
 # Ingestion Module
 
