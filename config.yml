@@ -2,14 +2,15 @@ input_dir: C:/Users/miles/Documents/Business/Personal Projects/DATA dump/Simulat
 lake_root: C:/Users/miles/Documents/Business/Personal Projects/DATA dump/Reporting Service/lake
 reports_dir: C:/Users/miles/Documents/Business/Personal Projects/DATA dump/Reporting Service/reports
 run_id: 20250418_01
+
 spark:
   extensions: "io.delta.sql.DeltaSparkSessionExtension"
   catalog: "org.apache.spark.sql.delta.catalog.DeltaCatalog"
-  jars_packages: "io.delta:delta-core_2.12:3.1.0"
   nativeio_disable: true
   winutils_path: "C:\\hadoop\\hadoop-3.3.6\\bin\\winutils.exe"
+
 hadoop:
-  version: "3.3.6"                         # for your docs/README
-  home_dir: "C:\\hadoop\\hadoop-3.3.6"     # location where you unpacked Hadoop
+  version: "3.3.6"
+  home_dir: "C:\\hadoop\\hadoop-3.3.6"
   winutils_path: "C:\\hadoop\\hadoop-3.3.6\\bin\\winutils.exe"
-  nativeio_disable: true                   # toggle for spark.hadoop.io.nativeio.disable
+  nativeio_disable: true

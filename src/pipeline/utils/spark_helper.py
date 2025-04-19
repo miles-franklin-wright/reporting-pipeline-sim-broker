@@ -1,59 +1,39 @@
-# src/pipeline/utils/spark_helper.py
+# pipeline/utils/spark_helper.py
+import os
 from pyspark.sql import SparkSession
 from delta import configure_spark_with_delta_pip
-import os
-
 
 def get_spark(spark_config: dict = None) -> SparkSession:
     """
-    Return a SparkSession configured for Delta Lake, honoring user-specified spark_config.
-
-    spark_config keys:
-      - extensions: Spark SQL extensions to enable (e.g. DeltaSparkSessionExtension)
-      - catalog: Spark catalog implementation (e.g. DeltaCatalog)
-      - jars_packages: comma-delimited jars to include
-      - nativeio_disable: bool to disable native IO (Windows fix)
+    Return a SparkSession configured for Delta Lake on Windows (and local filesystems).
+    - Exports HADOOP_HOME so winutils.exe is found.
+    - Honors any user overrides (extensions, catalog, nativeio_disable, custom jars).
     """
-    builder = (
-        SparkSession.builder
-        .appName("reporting-service")
-    )
+    cfg = spark_config or {}
 
-    # Apply config overrides if provided
-    if spark_config:
-        if spark_config.get("extensions"):
-            builder = builder.config(
-                "spark.sql.extensions",
-                spark_config["extensions"]
-            )
-        if spark_config.get("catalog"):
-            builder = builder.config(
-                "spark.sql.catalog.spark_catalog",
-                spark_config["catalog"]
-            )
-        if spark_config.get("jars_packages"):
-            builder = builder.config(
-                "spark.jars.packages",
-                spark_config["jars_packages"]
-            )
-        if spark_config.get("nativeio_disable"):
-            builder = builder.config(
-                "spark.hadoop.io.nativeio.disable",
-                "true"
-            )
+    # 1) Set HADOOP_HOME from winutils_path or home_dir
+    if winux := cfg.get("winutils_path"):
+        hdir = cfg.get("home_dir") or os.path.dirname(winux)
+        os.environ["HADOOP_HOME"] = hdir
 
-    # Use Java-only log store to avoid native IO issues on Windows
-    builder = builder.config(
-        "spark.delta.logStore.class",
-        "org.apache.spark.sql.delta.storage.FileStreamLogStore"
-    )
+    builder = SparkSession.builder.appName("reporting-service")
 
-    # Pull in Delta Lake JARs via pip-based integration
+    # 2) Apply user overrides for extensions & catalog
+    if cfg.get("extensions"):
+        builder = builder.config("spark.sql.extensions", cfg["extensions"])
+    if cfg.get("catalog"):
+        builder = builder.config("spark.sql.catalog.spark_catalog", cfg["catalog"])
+
+    # 3) Accept extra jars, if provided; otherwise let Delta’s helper handle jars
+    if jars := cfg.get("jars_packages"):
+        builder = builder.config("spark.jars.packages", jars)
+
+    # 4) Optionally disable native IO on Windows
+    if cfg.get("nativeio_disable"):
+        builder = builder.config("spark.hadoop.io.nativeio.disable", "true")
+
+    # 5) Wrap with Delta’s helper – this injects the right jars & extensions
     builder = configure_spark_with_delta_pip(builder)
 
-    # Optionally set HADOOP_HOME for winutils
-    hadoop_cfg = spark_config or {}
-    if hadoop_cfg.get("winutils_path"):
-        os.environ["HADOOP_HOME"] = hadoop_cfg.get("home_dir", os.path.dirname(hadoop_cfg["winutils_path"]))
-
+    # 6) Return the SparkSession
     return builder.getOrCreate()

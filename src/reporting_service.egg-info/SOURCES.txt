@@ -13,3 +13,8 @@ src/reporting_service.egg-info/SOURCES.txt
 src/reporting_service.egg-info/dependency_links.txt
 src/reporting_service.egg-info/requires.txt
 src/reporting_service.egg-info/top_level.txt
+src/sb_pipeline/dbt_project.yml
+src/sb_pipeline/profiles.yml
+src/sb_pipeline/models/gold/fact_pnl_daily.sql
+src/sb_pipeline/models/gold/fact_trade.sql
+src/sb_pipeline/models/silver/silver_trades.sql

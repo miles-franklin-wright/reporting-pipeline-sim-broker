@@ -1,0 +1,7 @@
+sb_pipeline:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      threads: 1
+      path: ":memory:"      # in‑memory for tests & light CI

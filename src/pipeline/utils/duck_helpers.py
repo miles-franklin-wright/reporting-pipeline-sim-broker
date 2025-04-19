@@ -19,23 +19,25 @@ def load_duck_table(path_pattern: str) -> pd.DataFrame:
 
 def fetch_pnl_daily(lake_root: str) -> List[Dict]:
     """
-    Load the fact_pnl_daily parquet from gold layer and return
-    a list of dicts [ {desk_id, real_pnl_usd, fees_usd}, ... ].
+    Try to load the fact_pnl_daily parquet files from the gold layer.
+    If none exist (or any error), return an empty list.
     """
-    df = load_duck_table(f"{lake_root}/gold/fact_pnl_daily/*.parquet")
-    # Convert floats back to native Python types if desired
+    pattern = f"{lake_root}/gold/fact_pnl_daily/*.parquet"
+    con = duckdb.connect()
+    try:
+        df = con.execute(f"SELECT * FROM read_parquet('{pattern}')").df()
+    except Exception:
+        # swallow *any* read error and return empty
+        df = pd.DataFrame(columns=["desk_id", "real_pnl_usd", "fees_usd"])
+    finally:
+        con.close()
     return df.to_dict(orient="records")
 
 def print_summary_table(df: pd.DataFrame) -> None:
-    """
-    Pretty‑print a Pandas DataFrame to the console using Rich.
-    """
     console = Console()
     table = Table(show_header=True, header_style="bold blue")
-    # Add columns
     for col in df.columns:
         table.add_column(col)
-    # Add rows
     for _, row in df.iterrows():
         table.add_row(*(str(row[c]) for c in df.columns))
     console.print(table)

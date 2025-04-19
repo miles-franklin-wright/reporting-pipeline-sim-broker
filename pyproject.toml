@@ -40,3 +40,10 @@ package-dir = {"" = "src"}
 where = ["src", ""]
 include = ["pipeline", "sb_pipeline"]
 exclude = ["logs*", "tests*", "docs*"]
+
+[tool.setuptools.package-data]
+"sb_pipeline" = [
+  "dbt_project.yml",
+  "profiles.yml",
+  "models/**/*.sql"
+]
